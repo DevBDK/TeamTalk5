@@ -4,8 +4,8 @@
  * Contact Information:
  *
  * Bjoern D. Rasmussen
- * Skanderborgvej 40 4-2
- * DK-8000 Aarhus C
+ * Kirketoften 5
+ * DK-8260 Viby J
  * Denmark
  * Email: contact@bearware.dk
  * Phone: +45 20 20 54 59
@@ -77,13 +77,19 @@ namespace BearWare
         SOUNDSYSTEM_OPENSLES_ANDROID = 7,
         /** @brief iOS sound API.
          *
-         * Add libraries AVFoundation.framework and
-         * AudioToolbox.framework.
+         * Two sound devices will appear when calling
+         * TT_GetSoundDevices(). Sound device ID 0 will be AudioUnit
+         * subtype Remote I/O Unit and sound device ID 1 will be
+         * AudioUnit subtype Voice-Processing I/O Unit.
          *
-         * Duplex mode is not supported by AudioUnit iOS sound API. 
+         * Note that iOS only supports one active Voice-Processing I/O
+         * Unit, i.e. only one @c TTInstance can use the
+         * Voice-Processing I/O Unit.
          *
-         * Use audio session mode AVAudioSessionModeVideoChat to
-         * remove echo from speakers. */
+         * Add libraries @c AVFoundation.framework and
+         * @c AudioToolbox.framework.
+         *
+         * Duplex mode is not supported by AudioUnit iOS sound API. */
         SOUNDSYSTEM_AUDIOUNIT = 8
     }
 
@@ -273,15 +279,15 @@ namespace BearWare
      * @see CLIENTEVENT_USER_RECORD_MEDIAFILE */
     public enum MediaFileStatus : uint
     {
-        MFS_CLOSED = 0,
+        MFS_CLOSED          = 0,
         /** @brief Error while processing media file. */
-        MFS_ERROR = 1,
+        MFS_ERROR           = 1,
         /** @brief Started processing media file. */
-        MFS_STARTED = 2,
+        MFS_STARTED         = 2,
         /** @brief Finished processing media file. */
-        MFS_FINISHED = 3,
+        MFS_FINISHED        = 3,
         /** @brief Aborted processing of media file. */
-        MFS_ABORTED = 4
+        MFS_ABORTED         = 4
     }
 
     /**
@@ -291,6 +297,17 @@ namespace BearWare
     {
         /** @brief Used to denote nothing selected. */
         AFF_NONE = 0,
+        /** @brief Store audio in the same format as the #BearWare.Channel's
+         * configured audio codec.
+         *
+         * Audio is stored in OGG format.  OGG format is supported by
+         * https://www.xiph.org/ogg and can be played using VLC media player
+         * http://www.videolan.org
+         * 
+         * Requires TeamTalk version 5.2.0.4730.
+         * @see TeamTalk.SetUserMediaStorageDir()
+         * @see TeamTalk.StartRecordingMuxedAudioFile() */
+        AFF_CHANNELCODEC_FORMAT  = 1,
         /** @brief Store in 16-bit wave format. */
         AFF_WAVE_FORMAT = 2,
         /** @brief Store in MP3-format. 
@@ -342,16 +359,16 @@ namespace BearWare
     public enum FourCC : uint
     {
         /** @brief Internal use to denote no supported formats. */
-        FOURCC_NONE = 0,
+        FOURCC_NONE     = 0,
         /** @brief Prefered image format with the lowest bandwidth
          * usage. A 640x480 pixel image takes up 460.800 bytes. */
-        FOURCC_I420 = 100,
+        FOURCC_I420     = 100,
         /** @brief Image format where a 640x480 pixel images takes up
          * 614.400 bytes. */
-        FOURCC_YUY2 = 101,
+        FOURCC_YUY2     = 101,
         /** @brief The image format with the highest bandwidth
          * usage. A 640x480 pixel images takes up 1.228.880 bytes. */
-        FOURCC_RGB32 = 102
+        FOURCC_RGB32    = 102
     }
 
     /**
@@ -433,7 +450,18 @@ namespace BearWare
         /** @brief The name of the capture device. */
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = TeamTalk.TT_STRLEN)]
         public string szDeviceName;
-        /** @brief The name of the API used to capture video. */
+        /** @brief @brief The name of the API used to capture video.
+         *
+         * The following video capture APIs are supported:
+         * - AVFoundation (Mac OS)
+         * - DirectShow (Windows)
+         * - V4L2 (Linux)
+         *
+         * Mac OS's QTkit video capture API was removed in TeamTalk
+         * 5.2 because Apple's AppStore will reject apps which have
+         * dependencies to it.
+         *
+         * V4L support was removed in TeamTalk 5.2. */
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = TeamTalk.TT_STRLEN)]
         public string szCaptureAPI;
         /** @brief The supported capture formats. */
@@ -477,24 +505,24 @@ namespace BearWare
     public enum BitmapFormat : uint
     {
         /** @brief Used to denote nothing selected. */
-        BMP_NONE = 0,
+        BMP_NONE            = 0,
         /** @brief The bitmap is a 256-colored bitmap requiring a
          * palette. The default 256 colored palette is the Netscape
          * browser-safe palette. Use TeamTalk.Palette_GetColorTable() to
          * access or change the palette. The maximum size of a 
          * 8-bit bitmap is 4095 blocks of 120 by 34 pixels. */
-        BMP_RGB8_PALETTE = 1,
+        BMP_RGB8_PALETTE    = 1,
         /** @brief The bitmap is a 16-bit colored bitmap. The maximum
          * pixels. */
-        BMP_RGB16_555 = 2,
+        BMP_RGB16_555       = 2,
         /** @brief The bitmap is a 24-bit colored bitmap. The maximum
          * size of a 24-bit bitmap is 4095 blocks of 85 by 16
          * pixels. */
-        BMP_RGB24 = 3,
+        BMP_RGB24           = 3,
         /** @brief The bitmap is a 32-bit colored bitmap. The maximum
          * size of a 32-bit bitmap is 4095 blocks of 51 by 20
          * pixels. */
-        BMP_RGB32 = 4
+        BMP_RGB32           = 4
     }
 
     /** @brief The protocols supported for transferring a
@@ -505,7 +533,7 @@ namespace BearWare
     {
         /** @brief Desktop protocol based on ZLIB for image
          * compression and UDP for data transmission. */
-        DESKTOPPROTOCOL_ZLIB_1 = 1
+        DESKTOPPROTOCOL_ZLIB_1  = 1
     }
 
     /**
@@ -548,11 +576,11 @@ namespace BearWare
     public enum DesktopKeyState : uint
     {
         /** @brief The key is ignored. */
-        DESKTOPKEYSTATE_NONE = 0x00000000,
+        DESKTOPKEYSTATE_NONE       = 0x00000000,
         /** @brief The key is pressed. */
-        DESKTOPKEYSTATE_DOWN = 0x00000001,
+        DESKTOPKEYSTATE_DOWN       = 0x00000001,
         /** @brief The key is released. */
-        DESKTOPKEYSTATE_UP = 0x00000002,
+        DESKTOPKEYSTATE_UP         = 0x00000002,
     }
 
     /**
@@ -711,7 +739,7 @@ namespace BearWare
          *
          * @see TeamTalk.SetUserPosition
          * @see TeamTalk.SetUserStereo */
-        public bool bStereoPlayback;
+        public bool bStereoPlayback; 
     }
 
     /** @brief Speex constants for #BearWare.SpeexCodec and #BearWare.SpeexVBRCodec. */
@@ -723,9 +751,9 @@ namespace BearWare
         public const int SPEEX_BANDMODE_WIDE = 1;
         /** @brief Use #BearWare.SpeexCodec or #BearWare.SpeexVBRCodec as 32 KHz */
         public const int SPEEX_BANDMODE_UWIDE = 2;
-        /** @brief The minimum quality for Speex codec. */
+        /** @brief The minimum quality for Speex codec. */ 
         public const int SPEEX_QUALITY_MIN = 0;
-        /** @brief The maximum quality for Speex codec. */
+        /** @brief The maximum quality for Speex codec. */ 
         public const int SPEEX_QUALITY_MAX = 10;
         /** @brief The minimum bitrate for Speex codec in 8 KHz
          * mode, i.e. quality set to 0. */
@@ -969,13 +997,41 @@ namespace BearWare
      * @see VideoCodec
      * @see TeamTalk.InitVideoCaptureDevice
      * @see TeamTalk.StartStreamingMediaFileToChannel() */
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Unicode)]
     public struct WebMVP8Codec
     {
-        /** @brief Target bitrate in kbits/sec.
-         * Same as 'rc_target_bitrate' in 'vpx_codec_enc_cfg_t'.
-         * http://www.webmproject.org/docs/vp8-sdk/ */
+        /** @brief Same as @c rc_target_bitrate */
+        [FieldOffset(0)]
         public int nRcTargetBitrate;
+        /** @brief Target bitrate in kbits/sec. This value must be
+         * greater than 0. 
+         *
+         * Same as 'rc_target_bitrate' in 'vpx_codec_enc_cfg_t'.
+         * http://www.webmproject.org/docs/webm-sdk/ */
+        [FieldOffset(0)]
+        public int rc_target_bitrate;
+        /** @brief Time that should be spent on encoding a frame.
+         *
+         * Same as 'deadline' parameter in 'vpx_codec_encode()'.
+         * http://www.webmproject.org/docs/webm-sdk/
+         * 
+         * Supported values are VPX_DL_REALTIME = 1, VPX_DL_GOOD_QUALITY = 1000000,
+         * and VPX_DL_BEST_QUALITY = 0. */
+        [FieldOffset(4)]
+        public uint nEncodeDeadline;
+    }
+
+    public struct WebMVP8CodecConstants
+    {
+        /** @brief @c nEncodeDeadline value for fastest encoding.
+         * @see WebMVP8Codec */
+        public const int WEBM_VPX_DL_REALTIME = 1;
+        /** @brief @c nEncodeDeadline value for good encoding.
+         * @see WebMVP8Codec */
+        public const int WEBM_VPX_DL_GOOD_QUALITY = 1000000;
+        /** @brief @c nEncodeDeadline value for best encoding.
+         * @see WebMVP8Codec */
+        public const int WEBM_VPX_DL_BEST_QUALITY = 0;
     }
 
     /**
@@ -1089,26 +1145,26 @@ namespace BearWare
     public enum StreamType : uint
     {
         /** @brief No stream. */
-        STREAMTYPE_NONE = 0x0000,
+        STREAMTYPE_NONE                     = 0x0000,
         /** @brief Voice stream type which is audio recorded from a
          * sound input device. @see TeamTalk.InitSoundInputDevice() */
-        STREAMTYPE_VOICE = 0x0001,
+        STREAMTYPE_VOICE                    = 0x0001,
         /** @brief Video capture stream type which is video recorded
          * from a webcam. @see TeamTalk.InitVideoCaptureDevice() */
-        STREAMTYPE_VIDEOCAPTURE = 0x0002,
+        STREAMTYPE_VIDEOCAPTURE             = 0x0002,
         /** @brief Audio stream type from a media file which is being
          * streamed. @see TeamTalk.StartStreamingMediaFileToChannel() */
-        STREAMTYPE_MEDIAFILE_AUDIO = 0x0004,
+        STREAMTYPE_MEDIAFILE_AUDIO          = 0x0004,
         /** @brief Video stream type from a media file which is being
          * streamed. @see TeamTalk.StartStreamingMediaFileToChannel() */
-        STREAMTYPE_MEDIAFILE_VIDEO = 0x0008,
+        STREAMTYPE_MEDIAFILE_VIDEO          = 0x0008,
         /** @brief Desktop window stream type which is a window (or
          * bitmap) being transmitted. @see TeamTalk.SendDesktopWindow() */
-        STREAMTYPE_DESKTOP = 0x0010,
+        STREAMTYPE_DESKTOP                  = 0x0010,
         /** @brief Desktop input stream type which is keyboard or
          * mouse input being transmitted. @see
          * TeamTalk.SendDesktopInput() */
-        STREAMTYPE_DESKTOPINPUT = 0x0020,
+        STREAMTYPE_DESKTOPINPUT             = 0x0020,
     }
     /** @} */
 
@@ -1131,61 +1187,62 @@ namespace BearWare
     {
         /** @brief Users who log onto the server has none of the
           * rights below. */
-        USERRIGHT_NONE = 0x00000000,
+        USERRIGHT_NONE                              = 0x00000000,
         /** @brief Allow multiple users to log on to the server with
          * the same #BearWare.UserAccount. @see TeamTalk.DoLogin() */
-        USERRIGHT_MULTI_LOGIN = 0x00000001,
+        USERRIGHT_MULTI_LOGIN                       = 0x00000001,
         /** @brief User can see users in all other channels. */
-        USERRIGHT_VIEW_ALL_USERS = 0x00000002,
+        USERRIGHT_VIEW_ALL_USERS                    = 0x00000002,
         /** @brief User is allowed to create temporary channels which
          * disappear when last user leaves the channel.
          * @see TeamTalk.DoJoinChannel() */
-        USERRIGHT_CREATE_TEMPORARY_CHANNEL = 0x00000004,
+        USERRIGHT_CREATE_TEMPORARY_CHANNEL          = 0x00000004,
         /** @brief User is allowed to create permanent channels which
          * are stored in the server's configuration file.
          * @see TeamTalk.DoMakeChannel() */
-        USERRIGHT_MODIFY_CHANNELS = 0x00000008,
+        USERRIGHT_MODIFY_CHANNELS          = 0x00000008,
         /** @brief User can broadcast text message of type 
          * #MSGTYPE_BROADCAST to all users. */
-        USERRIGHT_TEXTMESSAGE_BROADCAST = 0x00000010,
+        USERRIGHT_TEXTMESSAGE_BROADCAST             = 0x00000010,
         /** @brief User can kick users off the server. @see TeamTalk.DoKickUser() */
-        USERRIGHT_KICK_USERS = 0x00000020,
+        USERRIGHT_KICK_USERS                        = 0x00000020,
         /** @brief User can add and remove banned users.
          * @see TeamTalk.DoBanUser() @see TeamTalk.DoListBans() */
-        USERRIGHT_BAN_USERS = 0x00000040,
+        USERRIGHT_BAN_USERS                         = 0x00000040,
         /** @brief User can move users from one channel to another.
          * @see TeamTalk.DoMoveUser() */
-        USERRIGHT_MOVE_USERS = 0x00000080,
+        USERRIGHT_MOVE_USERS                        = 0x00000080,
         /** @brief User can make other users channel operator.
          * @see TeamTalk.DoChannelOp() */
-        USERRIGHT_OPERATOR_ENABLE = 0x00000100,
+        USERRIGHT_OPERATOR_ENABLE                   = 0x00000100,
         /** @brief User can upload files to channels. @see TeamTalk.DoSendFile() */
-        USERRIGHT_UPLOAD_FILES = 0x00000200,
+        USERRIGHT_UPLOAD_FILES                      = 0x00000200,
         /** @brief User can download files from channels. 
          * @see TeamTalk.DoRecvFile() */
-        USERRIGHT_DOWNLOAD_FILES = 0x00000400,
+        USERRIGHT_DOWNLOAD_FILES                    = 0x00000400,
         /** @brief User can update server properties.
          * @see TeamTalk.DoUpdateServer() */
-        USERRIGHT_UPDATE_SERVERPROPERTIES = 0x00000800,
+        USERRIGHT_UPDATE_SERVERPROPERTIES           = 0x00000800,
         /** @brief Users are allowed to forward audio packets through
          * server. TeamTalk.EnableVoiceTransmission() */
-        USERRIGHT_TRANSMIT_VOICE = 0x00001000,
+        USERRIGHT_TRANSMIT_VOICE                    = 0x00001000,
         /** @brief User is allowed to forward video packets through
          * server. TeamTalk.StartVideoCaptureTransmission() */
-        USERRIGHT_TRANSMIT_VIDEOCAPTURE = 0x00002000,
+        USERRIGHT_TRANSMIT_VIDEOCAPTURE                    = 0x00002000,
         /** @brief User is allowed to forward desktop packets through
          * server. @see TeamTalk.SendDesktopWindow() */
-        USERRIGHT_TRANSMIT_DESKTOP = 0x00004000,
+        USERRIGHT_TRANSMIT_DESKTOP                  = 0x00004000,
         /** @brief User is allowed to forward desktop input packets through
          * server. @see TeamTalk.SendDesktopInput() */
-        USERRIGHT_TRANSMIT_DESKTOPINPUT = 0x00008000,
+        USERRIGHT_TRANSMIT_DESKTOPINPUT             = 0x00008000,
         /** @brief User is allowed to stream audio files to channel.
          * @see TeamTalk.StartStreamingMediaFileToChannel() */
-        USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO = 0x00010000,
+        USERRIGHT_TRANSMIT_MEDIAFILE_AUDIO          = 0x00010000,
         /** @brief User is allowed to stream video files to channel.
          * @see TeamTalk.StartStreamingMediaFileToChannel() */
-        USERRIGHT_TRANSMIT_MEDIAFILE_VIDEO = 0x00020000,
-        USERRIGHT_ALL                      = 0xFFFFFFFF
+        USERRIGHT_TRANSMIT_MEDIAFILE_VIDEO          = 0x00020000,
+         /** @brief User with all rights.*/
+        USERRIGHT_ALL          = 0xFFFFFFFF
     }
 
     /** 
@@ -1351,11 +1408,11 @@ namespace BearWare
     {
         /** @brief Used internally to denote an unauthenticated
          * user. */
-        USERTYPE_NONE = 0x0,
+        USERTYPE_NONE       = 0x0,
         /** @brief A default user who can join channels. */
-        USERTYPE_DEFAULT = 0x01,
+        USERTYPE_DEFAULT    = 0x01,
         /** @brief A user with administrator privileges. */
-        USERTYPE_ADMIN = 0x02
+        USERTYPE_ADMIN      = 0x02
     }
 
     /** 
@@ -1497,40 +1554,40 @@ namespace BearWare
     public enum UserState : uint
     {
         /** @brief The user is in initial state. */
-        USERSTATE_NONE = 0x0000000,
+        USERSTATE_NONE                                  = 0x0000000,
         /** @brief If set the user is currently talking. If this flag
          * changes the event ::CLIENTEVENT_USER_STATECHANGE is
          * posted. */
-        USERSTATE_VOICE = 0x00000001,
+        USERSTATE_VOICE                                 = 0x00000001,
         /** @brief If set the user's voice is muted. @see TeamTalk.SetUserMute */
-        USERSTATE_MUTE_VOICE = 0x00000002,
+        USERSTATE_MUTE_VOICE                            = 0x00000002,
         /** @brief If set the user's media file playback is muted.
          * @see TeamTalk.SetUserMute */
-        USERSTATE_MUTE_MEDIAFILE = 0x00000004,
+        USERSTATE_MUTE_MEDIAFILE                        = 0x00000004,
         /** @brief If set the user currently has an active desktop
          * session. If this flag changes the event
          * ::CLIENTEVENT_USER_STATECHANGE is posted.  @see
          * TeamTalk.SendDesktopWindow(). */
-        USERSTATE_DESKTOP = 0x00000008,
+        USERSTATE_DESKTOP                               = 0x00000008,
         /** @brief If set the user currently has an active video
          * stream.  If this flag changes the event
          * ::CLIENTEVENT_USER_STATECHANGE is posted.  @see
          * CLIENTEVENT_USER_VIDEOCAPTURE. */
-        USERSTATE_VIDEOCAPTURE = 0x00000010,
+        USERSTATE_VIDEOCAPTURE                          = 0x00000010,
         /** @brief If set the user currently streams an audio file. If
          * user is streaming a video file with audio then this value
          * is also set.  If this flag changes the event
          * ::CLIENTEVENT_USER_STATECHANGE is posted.  @see
          * TeamTalk.StartStreamingMediaFile() */
-        USERSTATE_MEDIAFILE_AUDIO = 0x00000020,
+        USERSTATE_MEDIAFILE_AUDIO                       = 0x00000020,
         /** @brief If set the user currently streams a video file.  If
          * this flag changes the event ::CLIENTEVENT_USER_STATECHANGE
          * is posted.  @see TeamTalk.StartStreamingMediaFile() */
-        USERSTATE_MEDIAFILE_VIDEO = 0x00000040,
+        USERSTATE_MEDIAFILE_VIDEO                       = 0x00000040,
         /** @brief If set user is streaming a media file.  If this
          * flag changes the event ::CLIENTEVENT_USER_STATECHANGE is
          * posted.  @see TeamTalk.StartStreamingMediaFile() */
-        USERSTATE_MEDIAFILE = USERSTATE_MEDIAFILE_AUDIO |
+        USERSTATE_MEDIAFILE                             = USERSTATE_MEDIAFILE_AUDIO |
                                                           USERSTATE_MEDIAFILE_VIDEO
     }
 
@@ -1567,14 +1624,14 @@ namespace BearWare
          * the server and will not change after login. Three octets
          * are used for the version number. Third octet is major,
          * second octet is minor and third octet is
-         * build. I.e. 0x00050201 is version 5.2.1. */
+         * build. I.e. 0x00050201 is version 5.2.1. */ 
         public uint uVersion;
         /** @brief The channel which the user is currently
          * participating in. 0 if none. This value can change as a
          * result of TeamTalk.DoJoinChannel() or TeamTalk.DoLeaveChannel(). Events
          * ::CLIENTEVENT_CMD_USER_JOINED and ::CLIENTEVENT_CMD_USER_LEFT
          * are posted when this value changes. */
-        public int nChannelID;
+        public int nChannelID; 
         /** @brief A bitmask of what the local user subscribes to from
          * this user. Invoking TeamTalk.DoSubscribe() and TeamTalk.DoUnsubscribe()
          * on the local client instance can change this value. Event
@@ -1587,10 +1644,10 @@ namespace BearWare
          * this value. Event ::CLIENTEVENT_CMD_USER_UPDATE is posted if
          * this value changes. */
         public Subscription uPeerSubscriptions;
-        /** @brief The user's nickname. Invoking
-         * TeamTalk.DoChangeNickname() changes this value. Event
-         * ::CLIENTEVENT_CMD_USER_UPDATE is posted if this value
-         * changes. */
+         /** @brief The user's nickname. Invoking
+          * TeamTalk.DoChangeNickname() changes this value. Event
+          * ::CLIENTEVENT_CMD_USER_UPDATE is posted if this value
+          * changes. */
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = TeamTalk.TT_STRLEN)]
         public string szNickname;
         /** @brief The user's current status mode. Invoke
@@ -1663,6 +1720,11 @@ namespace BearWare
          * content.
          * @see TeamTalk.SetUserAudioStreamBufferSize() */
         public int nBufferMSecMediaFile;
+        /** @brief The name of the client application which the user
+         * is using. This is the value passed as @c szClientName in
+         * TT_DoLoginEx() */
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = TeamTalk.TT_STRLEN)]
+        public string szClientName;
     }
 
     /**
@@ -1711,20 +1773,20 @@ namespace BearWare
      *
      * @see BearWare.TextMessage
      * @see BearWare.TeamTalk.DoTextMessage
-     * @see CLIENTEVENT_CMD_USER_TEXTMSG */
+     * @see CLIENTEVENT_CMD_USER_TEXTMSG */ 
     public enum TextMsgType : uint
     {
         /** @brief A User to user text message. A message of this
          * type can be sent across channels. */
-        MSGTYPE_USER = 1,
+        MSGTYPE_USER        = 1,
         /** @brief A User to channel text message. Users of type
          * ::USERTYPE_DEFAULT can only send this text message to the
          * channel they're participating in, whereas users of type
          * ::USERTYPE_ADMIN can send to any channel. */
-        MSGTYPE_CHANNEL = 2,
+        MSGTYPE_CHANNEL     = 2,
         /** @brief A broadcast message. Requires
          * ::USERRIGHT_TEXTMESSAGE_BROADCAST. */
-        MSGTYPE_BROADCAST = 3,
+        MSGTYPE_BROADCAST   = 3,
         /** @brief A custom user to user text message. Works the same
          * way as #TextMsgType ::MSGTYPE_USER. */
         MSGTYPE_CUSTOM = 4
@@ -1769,12 +1831,12 @@ namespace BearWare
     {
         /** @brief A default channel is a channel which disappears
          * after the last user leaves the channel. */
-        CHANNEL_DEFAULT = 0x0000,
+        CHANNEL_DEFAULT                                         = 0x0000,
         /** @brief A channel which persists even when the last user
          * leaves the channel. */
-        CHANNEL_PERMANENT = 0x0001,
+        CHANNEL_PERMANENT                                       = 0x0001,
         /** @brief Only one user can transmit at a time. */
-        CHANNEL_SOLO_TRANSMIT = 0x0002,
+        CHANNEL_SOLO_TRANSMIT                                   = 0x0002,
         /** @brief Voice and video transmission in the channel is
          * controlled by a channel operator.
          *
@@ -1785,17 +1847,17 @@ namespace BearWare
          *
          * @see TeamTalk.IsChannelOperator
          * @see ::USERTYPE_ADMIN */
-        CHANNEL_CLASSROOM = 0x0004,
+        CHANNEL_CLASSROOM                                       = 0x0004,
         /** @brief Only channel operators (and administrators) will receive 
          * audio/video/desktop transmissions. Default channel users 
          * will only see transmissions from operators and/or 
          * administrators. */
-        CHANNEL_OPERATOR_RECVONLY = 0x0008,
+        CHANNEL_OPERATOR_RECVONLY                               = 0x0008,
         /** @brief Don't allow voice transmission if it's trigged by
          * voice activation. @see TeamTalk.EnableVoiceActivation() */
-        CHANNEL_NO_VOICEACTIVATION = 0x0010,
+        CHANNEL_NO_VOICEACTIVATION                              = 0x0010,
         /** @brief Don't allow recording to files in the channel. */
-        CHANNEL_NO_RECORDING = 0x0020
+        CHANNEL_NO_RECORDING                                    = 0x0020
     }
 
     /**
@@ -1891,8 +1953,7 @@ namespace BearWare
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = TeamTalk.TT_TRANSMITUSERS_MAX * 2)]
         public int[,] transmitUsers;
 
-        public Channel(bool set_defaults)
-            : this()
+        public Channel(bool set_defaults) : this()
         {
             if (set_defaults)
             {
@@ -2100,23 +2161,23 @@ namespace BearWare
          * COMMANDS */
 
         /** @brief Command has syntax error. Only used internally. */
-        CMDERR_SYNTAX_ERROR = 1000,
+        CMDERR_SYNTAX_ERROR                     = 1000,
         /** @brief The server doesn't support the issued command.
          *
          * This error may occur if the server is an older version than
          * the client instance. */
-        CMDERR_UNKNOWN_COMMAND = 1001,
+        CMDERR_UNKNOWN_COMMAND                  = 1001,
         /** @brief Command cannot be performed due to missing
          * parameter. Only used internally. */
-        CMDERR_MISSING_PARAMETER = 1002,
+        CMDERR_MISSING_PARAMETER                = 1002,
         /** @brief The server uses a protocol which is incompatible
          * with the client instance. */
-        CMDERR_INCOMPATIBLE_PROTOCOLS = 1003,
+        CMDERR_INCOMPATIBLE_PROTOCOLS           = 1003,
         /** @brief The server does not support the audio codec specified
          * by the client. Introduced in version 4.1.0.1264. 
          * @see TeamTalk.DoMakeChannel()
          * @see TeamTalk.DoJoinChannel() */
-        CMDERR_UNKNOWN_AUDIOCODEC = 1004,
+        CMDERR_UNKNOWN_AUDIOCODEC               = 1004,
         /** @brief Invalid username for #BearWare.UserAccount.
          * @see TeamTalk.DoNewUserAccount() */
         CMDERR_INVALID_USERNAME = 1005,
@@ -2127,36 +2188,36 @@ namespace BearWare
          *
          * The TeamTalk.DoLogin() command passed a server password which was
          * invalid.  @see TeamTalk.DoLogin */
-        CMDERR_INCORRECT_SERVER_PASSWORD = 2000,
+        CMDERR_INCORRECT_SERVER_PASSWORD        = 2000,
         /** @brief Invalid channel password. 
          *
          * The TeamTalk.DoJoinChannel() or TeamTalk.DoJoinChannel()ByID passed an
          * invalid channel password. TeamTalk.DoMakeChannel() can also cause
          * a this error if the password is longer than #BearWare.TeamTalk.TT_STRLEN. */
-        CMDERR_INCORRECT_CHANNEL_PASSWORD = 2001,
+        CMDERR_INCORRECT_CHANNEL_PASSWORD       = 2001,
         /** @brief Invalid username or password for account.
          *
          * The TeamTalk.DoLogin() command was issued with invalid account
          * properties. This error can also occur by
          * TeamTalk.DoNewUserAccount() if username is empty. */
-        CMDERR_INVALID_ACCOUNT = 2002,
+        CMDERR_INVALID_ACCOUNT                  = 2002,
         /** @brief Login failed due to maximum number of users on
          * server.
          *
          * TeamTalk.DoLogin() failed because the server does not allow any
          * more users. */
-        CMDERR_MAX_SERVER_USERS_EXCEEDED = 2003,
+        CMDERR_MAX_SERVER_USERS_EXCEEDED        = 2003,
         /** @brief Cannot join channel because it has maximum number
          * of users.
          *
          * TeamTalk.DoJoinChannel() or TeamTalk.DoJoinChannel()ByID failed because
          * no more users are allowed in the channel. */
-        CMDERR_MAX_CHANNEL_USERS_EXCEEDED = 2004,
+        CMDERR_MAX_CHANNEL_USERS_EXCEEDED       = 2004,
         /** @brief IP-address has been banned from server.
          *
          * TeamTalk.DoLogin() failed because the local client's IP-address
          * has been banned on the server. */
-        CMDERR_SERVER_BANNED = 2005,
+        CMDERR_SERVER_BANNED                    = 2005,
         /** @brief Command not authorized.
          *
          * The command cannot be performed because the client instance
@@ -2188,21 +2249,21 @@ namespace BearWare
          * @see TeamTalk.DoListUserAccounts
          * @see TeamTalk.DoNewUserAccount
          * @see TeamTalk.DoDeleteUserAccount */
-        CMDERR_NOT_AUTHORIZED = 2006,
+        CMDERR_NOT_AUTHORIZED                   = 2006,
         /** @brief Cannot upload file because disk quota will be exceeded.
          *
          * TeamTalk.DoSendFile() was not allowed because there's not enough
          * disk space available for upload.
          *
          * @see Channel */
-        CMDERR_MAX_DISKUSAGE_EXCEEDED = 2008,
+        CMDERR_MAX_DISKUSAGE_EXCEEDED           = 2008,
 
         /** @brief Invalid password for becoming channel operator.
          * 
          * The password specified in TeamTalk.DoChannelOpEx() is not correct.
          * The operator password is the @a szOpPassword of the 
          * #BearWare.Channel-struct. */
-        CMDERR_INCORRECT_OP_PASSWORD = 2010,
+        CMDERR_INCORRECT_OP_PASSWORD            = 2010,
 
         /** @brief The selected #BearWare.AudioCodec exceeds what the
          * server allows.
@@ -2230,25 +2291,25 @@ namespace BearWare
          * TeamTalk.DoLogin() has not been issued successfully or
          * TeamTalk.DoLogout() could not be performed because client
          * instance is already logged in.*/
-        CMDERR_NOT_LOGGEDIN = 3000,
+        CMDERR_NOT_LOGGEDIN                     = 3000,
 
         /** @brief Already logged in.
          *
          * TeamTalk.DoLogin() cannot be performed twice. */
-        CMDERR_ALREADY_LOGGEDIN = 3001,
+        CMDERR_ALREADY_LOGGEDIN                 = 3001,
         /** @brief Cannot leave channel because not in channel.
          *
          * TeamTalk.DoLeaveChannel() failed because user is not in a channel. */
-        CMDERR_NOT_IN_CHANNEL = 3002,
+        CMDERR_NOT_IN_CHANNEL                   = 3002,
         /** @brief Cannot join same channel twice.
          * 
          * TeamTalk.DoJoinChannel() or TeamTalk.DoJoinChannel()ByID failed because
          * client instance is already in the specified channel. */
-        CMDERR_ALREADY_IN_CHANNEL = 3003,
+        CMDERR_ALREADY_IN_CHANNEL               = 3003,
         /** @brief Channel already exists.
          *
          * TeamTalk.DoMakeChannel() failed because channel already exists. */
-        CMDERR_CHANNEL_ALREADY_EXISTS = 3004,
+        CMDERR_CHANNEL_ALREADY_EXISTS           = 3004,
         /** @brief Channel does not exist.
          *
          * Command failed because channel does not exists.
@@ -2266,7 +2327,7 @@ namespace BearWare
          * @see TeamTalk.DoBanUser
          * @see TeamTalk.DoMoveUser
          * @see TeamTalk.DoTextMessage */
-        CMDERR_CHANNEL_NOT_FOUND = 3005,
+        CMDERR_CHANNEL_NOT_FOUND                = 3005,
         /** @brief User not found.
          * 
          * Command failed because user does not exists.
@@ -2277,47 +2338,47 @@ namespace BearWare
          * @see TeamTalk.DoTextMessage
          * @see TeamTalk.DoSubscribe
          * @see TeamTalk.DoUnsubscribe */
-        CMDERR_USER_NOT_FOUND = 3006,
+        CMDERR_USER_NOT_FOUND                   = 3006,
         /** @brief Banned IP-address does not exist.
          * 
          * TeamTalk.DoUnBanUser() failed because there is no banned
          * IP-address which matches what was specified. */
-        CMDERR_BAN_NOT_FOUND = 3007,
+        CMDERR_BAN_NOT_FOUND                    = 3007,
         /** @brief File transfer doesn't exists.
          *
          * TeamTalk.DoSendFile() or TeamTalk.DoRecvFile() failed because the server
          * cannot process the file transfer. */
-        CMDERR_FILETRANSFER_NOT_FOUND = 3008,
+        CMDERR_FILETRANSFER_NOT_FOUND           = 3008,
         /** @brief Server failed to open file.
          *
          * TeamTalk.DoSendFile() or TeamTalk.DoRecvFile() failed because the server
          * cannot open the specified file (possible file lock). */
-        CMDERR_OPENFILE_FAILED = 3009,
+        CMDERR_OPENFILE_FAILED                  = 3009,
         /** @brief Cannot find user account.
          * 
          * TeamTalk.DoDeleteUserAccount() failed because the specified user
          * account does not exists. */
-        CMDERR_ACCOUNT_NOT_FOUND = 3010,
+        CMDERR_ACCOUNT_NOT_FOUND                = 3010,
         /** @brief File does not exist.
          *
          * TeamTalk.DoSendFile(), TeamTalk.DoRecvFile() or TeamTalk.DoDeleteFile() failed
          * because the server cannot find the specified file. */
-        CMDERR_FILE_NOT_FOUND = 3011,
+        CMDERR_FILE_NOT_FOUND                   = 3011,
         /** @brief File already exist.
          *
          * TeamTalk.DoSendFile() failed because the file already exists in
          * the channel. */
-        CMDERR_FILE_ALREADY_EXISTS = 3012,
+        CMDERR_FILE_ALREADY_EXISTS              = 3012,
         /** @brief Server does not allow file transfers.
          *
          * TeamTalk.DoSendFile() or TeamTalk.DoRecvFile() failed because the server
          * does not allow file transfers. */
-        CMDERR_FILESHARING_DISABLED = 3013,
+        CMDERR_FILESHARING_DISABLED             = 3013,
 
         /** @brief Cannot process command since channel is not empty.
          * @see TeamTalk.DoUpdateChannel() #BearWare.AudioCodec cannot be changed while
          * there are users in a channel. */
-        CMDERR_CHANNEL_HAS_USERS = 3015,
+        CMDERR_CHANNEL_HAS_USERS                = 3015,
 
         /* ERRORS 10000-10999 ARE NOT COMMAND ERRORS BUT INSTEAD
          * ERRORS IN THE CLIENT INSTANCE. */
@@ -2326,16 +2387,16 @@ namespace BearWare
          *
          * This can e.g. happen when joining a channel and the sound
          * device has been unplugged. */
-        INTERR_SNDINPUT_FAILURE = 10000,
+        INTERR_SNDINPUT_FAILURE                 = 10000,
         /** @brief A sound output device failed.
          *
          * This can e.g. happen when joining a channel and the sound
          * device has been unplugged. */
-        INTERR_SNDOUTPUT_FAILURE = 10001,
+        INTERR_SNDOUTPUT_FAILURE                = 10001,
         /** @brief Audio codec used by channel failed to initialize.
          * Ensure the settings specified in #BearWare.AudioCodec are valid.
          * @see TeamTalk.DoJoinChannel() */
-        INTERR_AUDIOCODEC_INIT_FAILED = 10002,
+        INTERR_AUDIOCODEC_INIT_FAILED           = 10002,
         /** @brief #BearWare.SpeexDSP failed to initialize.
          *
          * This error occurs when joining a channel.
@@ -2343,7 +2404,7 @@ namespace BearWare
          * The settings specified by TeamTalk.SetSoundInputPreprocess() are
          * invalid for the specified audio codec. @see
          * TeamTalk.DoJoinChannel() */
-        INTERR_SPEEXDSP_INIT_FAILED = 10003,
+        INTERR_SPEEXDSP_INIT_FAILED             = 10003,
         /** @brief #BearWare.TTMessage event queue overflowed.
          *
          * The message queue for events has overflowed because
@@ -2351,7 +2412,7 @@ namespace BearWare
          * time. The #BearWare.TTMessage message queue will suspend
          * event handling once the queue overflows and resumes event
          * handling again when the message queue has been drained. */
-        INTERR_TTMESSAGE_QUEUE_OVERFLOW = 10004
+        INTERR_TTMESSAGE_QUEUE_OVERFLOW         = 10004
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
@@ -2879,40 +2940,40 @@ namespace BearWare
     /* List of structures used internally by TeamTalk. */
     public enum TTType : uint
     {
-        __NONE = 0,
-        __AUDIOCODEC = 1,
-        __BANNEDUSER = 2,
-        __VIDEOFORMAT = 3,
-        __OPUSCODEC = 4,
-        __CHANNEL = 5,
-        __CLIENTSTATISTICS = 6,
-        __REMOTEFILE = 7,
-        __FILETRANSFER = 8,
-        __MEDIAFILESTATUS = 9,
-        __SERVERPROPERTIES = 10,
-        __SERVERSTATISTICS = 11,
-        __SOUNDDEVICE = 12,
-        __SPEEXCODEC = 13,
-        __TEXTMESSAGE = 14,
-        __WEBMVP8CODEC = 15,
-        __TTMESSAGE = 16,
-        __USER = 17,
-        __USERACCOUNT = 18,
-        __USERSTATISTICS = 19,
-        __VIDEOCAPTUREDEVICE = 20,
-        __VIDEOCODEC = 21,
-        __AUDIOCONFIG = 22,
-        __SPEEXVBRCODEC = 23,
-        __VIDEOFRAME = 24,
-        __AUDIOBLOCK = 25,
-        __AUDIOFORMAT = 26,
-        __MEDIAFILEINFO = 27,
-        __CLIENTERRORMSG = 28,
-        __TTBOOL = 29,
-        __INT32 = 30,
-        __DESKTOPINPUT = 31,
-        __SPEEXDSP = 32,
-        __STREAMTYPE = 33
+        __NONE                    =  0,
+        __AUDIOCODEC              =  1,
+        __BANNEDUSER              =  2,
+        __VIDEOFORMAT             =  3,
+        __OPUSCODEC               =  4,
+        __CHANNEL                 =  5,
+        __CLIENTSTATISTICS        =  6,
+        __REMOTEFILE              =  7,
+        __FILETRANSFER            =  8,
+        __MEDIAFILESTATUS         =  9,
+        __SERVERPROPERTIES        = 10,
+        __SERVERSTATISTICS        = 11,
+        __SOUNDDEVICE             = 12,
+        __SPEEXCODEC              = 13,
+        __TEXTMESSAGE             = 14,
+        __WEBMVP8CODEC            = 15,
+        __TTMESSAGE               = 16,
+        __USER                    = 17,
+        __USERACCOUNT             = 18,
+        __USERSTATISTICS          = 19,
+        __VIDEOCAPTUREDEVICE      = 20,
+        __VIDEOCODEC              = 21,
+        __AUDIOCONFIG             = 22,
+        __SPEEXVBRCODEC           = 23,
+        __VIDEOFRAME              = 24,
+        __AUDIOBLOCK              = 25,
+        __AUDIOFORMAT             = 26,
+        __MEDIAFILEINFO           = 27,
+        __CLIENTERRORMSG          = 28,
+        __TTBOOL                    = 29,
+        __INT32                   = 30,
+        __DESKTOPINPUT            = 31,
+        __SPEEXDSP                = 32,
+        __STREAMTYPE              = 33
     }
 
     /**
@@ -2936,10 +2997,10 @@ namespace BearWare
         public TTType ttType;
         /** @brief Reserved. To preserve alignment. */
         public uint uReserved;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5224)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6248)]
         public byte[] data;
         //UnionData data;
-
+        
         public object DataToObject()
         {
             switch (ttType)
@@ -2966,13 +3027,13 @@ namespace BearWare
                     return Marshal.PtrToStructure(TTDLL.TT_DBG_GETDATAPTR(ref this), typeof(User));
                 case TTType.__USERACCOUNT:
                     return Marshal.PtrToStructure(TTDLL.TT_DBG_GETDATAPTR(ref this), typeof(UserAccount));
-                case TTType.__BANNEDUSER:
+                case TTType.__BANNEDUSER :
                     return Marshal.PtrToStructure(TTDLL.TT_DBG_GETDATAPTR(ref this), typeof(BannedUser));
                 case TTType.__TTBOOL:
                     return Marshal.ReadInt32(TTDLL.TT_DBG_GETDATAPTR(ref this)) != 0;
                 case TTType.__INT32:
                     return Marshal.ReadInt32(TTDLL.TT_DBG_GETDATAPTR(ref this));
-                case TTType.__STREAMTYPE:
+                case TTType.__STREAMTYPE :
                     return (StreamType)Marshal.ReadInt32(TTDLL.TT_DBG_GETDATAPTR(ref this));
                 default:
                     return null;
@@ -3124,6 +3185,7 @@ namespace BearWare
          * @see TeamTalk.StartStreamingMediaFileToChannel() */
         CLIENT_STREAM_VIDEO = 0x00020000
     }
+
     /** @} */
 
     /** @ingroup initclient
@@ -3390,18 +3452,18 @@ namespace BearWare
             switch (msg.nClientEvent)
             {
                 case ClientEvent.CLIENTEVENT_CON_SUCCESS:
-                    if (OnConnectionSuccess != null)
+                    if(OnConnectionSuccess != null)
                         OnConnectionSuccess();
                     break;
                 case ClientEvent.CLIENTEVENT_CON_FAILED:
                     if (OnConnectionFailed != null)
-                        OnConnectionFailed();
+                    OnConnectionFailed();
                     break;
                 case ClientEvent.CLIENTEVENT_CON_LOST:
                     if (OnConnectionLost != null)
                         OnConnectionLost();
                     break;
-                case ClientEvent.CLIENTEVENT_CON_MAX_PAYLOAD_UPDATED:
+                case ClientEvent.CLIENTEVENT_CON_MAX_PAYLOAD_UPDATED :
                     if (OnConnectionMaxPayloadUpdated != null)
                         OnConnectionMaxPayloadUpdated((int)msg.DataToObject());
                     break;
@@ -3413,7 +3475,7 @@ namespace BearWare
                     if (OnCmdError != null)
                         OnCmdError((int)msg.nSource, (ClientErrorMsg)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_CMD_SUCCESS:
+                case ClientEvent.CLIENTEVENT_CMD_SUCCESS :
                     if (OnCmdSuccess != null)
                         OnCmdSuccess((int)msg.nSource);
                     break;
@@ -3474,7 +3536,7 @@ namespace BearWare
                     if (OnCmdServerUpdate != null)
                         OnCmdServerUpdate((ServerProperties)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_CMD_SERVERSTATISTICS:
+                case ClientEvent.CLIENTEVENT_CMD_SERVERSTATISTICS :
                     if (OnCmdServerStatistics != null)
                         OnCmdServerStatistics((ServerStatistics)msg.DataToObject());
                     break;
@@ -3486,16 +3548,16 @@ namespace BearWare
                     if (OnCmdFileRemove != null)
                         OnCmdFileRemove((RemoteFile)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_CMD_USERACCOUNT:
+                case ClientEvent.CLIENTEVENT_CMD_USERACCOUNT :
                     if (OnCmdUserAccount != null)
                         OnCmdUserAccount((UserAccount)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_CMD_BANNEDUSER:
+                case ClientEvent.CLIENTEVENT_CMD_BANNEDUSER :
                     if (OnCmdBannedUser != null)
                         OnCmdBannedUser((BannedUser)msg.DataToObject());
                     break;
-
-                case ClientEvent.CLIENTEVENT_USER_STATECHANGE:
+                
+                case ClientEvent.CLIENTEVENT_USER_STATECHANGE :
                     if (OnUserStateChange != null)
                         OnUserStateChange((User)msg.DataToObject());
                     break;
@@ -3515,44 +3577,44 @@ namespace BearWare
                     if (OnUserDesktopCursor != null)
                         OnUserDesktopCursor((int)msg.nSource, (DesktopInput)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_USER_DESKTOPINPUT:
+                case ClientEvent.CLIENTEVENT_USER_DESKTOPINPUT :
                     if (OnUserDesktopInput != null)
                         OnUserDesktopInput((int)msg.nSource, (DesktopInput)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_USER_RECORD_MEDIAFILE:
-                    if (OnUserRecordMediaFile != null)
+                case ClientEvent.CLIENTEVENT_USER_RECORD_MEDIAFILE :
+                    if(OnUserRecordMediaFile != null)
                         OnUserRecordMediaFile((int)msg.nSource, (MediaFileInfo)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK:
-                    if (OnUserAudioBlock != null)
+                case ClientEvent.CLIENTEVENT_USER_AUDIOBLOCK :
+                    if(OnUserAudioBlock != null)
                         OnUserAudioBlock((int)msg.nSource, (StreamType)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_INTERNAL_ERROR:
-                    if (OnInternalError != null)
+                case ClientEvent.CLIENTEVENT_INTERNAL_ERROR :
+                    if(OnInternalError!= null)
                         OnInternalError((ClientErrorMsg)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_VOICE_ACTIVATION:
-                    if (OnVoiceActivation != null)
+                case ClientEvent.CLIENTEVENT_VOICE_ACTIVATION :
+                    if(OnVoiceActivation != null)
                         OnVoiceActivation((bool)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_HOTKEY:
-                    if (OnHotKeyToggle != null)
+                case ClientEvent.CLIENTEVENT_HOTKEY :
+                    if(OnHotKeyToggle != null)
                         OnHotKeyToggle(msg.nSource, (bool)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_HOTKEY_TEST:
-                    if (OnHotKeyTest != null)
+                case ClientEvent.CLIENTEVENT_HOTKEY_TEST :
+                    if(OnHotKeyTest != null)
                         OnHotKeyTest(msg.nSource, (bool)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_FILETRANSFER:
-                    if (OnFileTransfer != null)
+                case ClientEvent.CLIENTEVENT_FILETRANSFER :
+                    if(OnFileTransfer != null)
                         OnFileTransfer((FileTransfer)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_DESKTOPWINDOW_TRANSFER:
-                    if (OnDesktopWindowTransfer != null)
+                case ClientEvent.CLIENTEVENT_DESKTOPWINDOW_TRANSFER :
+                    if(OnDesktopWindowTransfer != null)
                         OnDesktopWindowTransfer(msg.nSource, (int)msg.DataToObject());
                     break;
-                case ClientEvent.CLIENTEVENT_STREAM_MEDIAFILE:
-                    if (OnStreamMediaFile != null)
+                case ClientEvent.CLIENTEVENT_STREAM_MEDIAFILE :
+                    if(OnStreamMediaFile != null)
                         OnStreamMediaFile((MediaFileInfo)msg.DataToObject());
                     break;
             }
@@ -4238,7 +4300,7 @@ namespace BearWare
                                     int nDestHeight,
                                     ref VideoFrame lpVideoFrame)
         {
-            return TTDLL.TT_PaintVideoFrame(nUserID, hDC, XDest, YDest, nDestWidth,
+            return TTDLL.TT_PaintVideoFrame(nUserID, hDC, XDest, YDest, nDestWidth, 
                                           nDestHeight, ref lpVideoFrame);
         }
 
@@ -4285,8 +4347,8 @@ namespace BearWare
                                       int nSrcHeight,
                                       ref VideoFrame lpVideoFrame)
         {
-            return TTDLL.TT_PaintVideoFrameEx(nUserID, hDC, XDest, YDest, nDestWidth, nDestHeight,
-                                            XSrc, YSrc, nSrcWidth, nSrcHeight,
+            return TTDLL.TT_PaintVideoFrameEx(nUserID, hDC, XDest, YDest, nDestWidth, nDestHeight, 
+                                            XSrc, YSrc, nSrcWidth, nSrcHeight, 
                                             ref lpVideoFrame);
         }
 
@@ -4312,14 +4374,14 @@ namespace BearWare
         {
             bmp = null;
             IntPtr ptr = TTDLL.TT_AcquireUserVideoCaptureFrame(m_ttInst, nUserID);
-            if (ptr == IntPtr.Zero)
+            if(ptr == IntPtr.Zero)
                 return new VideoFrame();
 
             VideoFrame frm = (VideoFrame)Marshal.PtrToStructure(ptr, typeof(VideoFrame));
             vidcapframes.Add(frm.frameBuffer, ptr);
 
             PixelFormat pixelformat = PixelFormat.Format32bppRgb;
-            bmp = new Bitmap(frm.nWidth, frm.nHeight, frm.nWidth * 4, pixelformat, frm.frameBuffer);
+            bmp = new Bitmap(frm.nWidth, frm.nHeight, frm.nWidth*4, pixelformat, frm.frameBuffer);
             return frm;
         }
 
@@ -4587,7 +4649,7 @@ namespace BearWare
                                                           int nIndex)
         {
             IntPtr ptr = TTDLL.TT_Palette_GetColorTable(nBmpPalette, nIndex);
-            switch (nBmpPalette)
+            switch(nBmpPalette)
             {
                 case BitmapFormat.BMP_RGB8_PALETTE:
                     return Color.FromArgb(Marshal.ReadInt32(ptr));
@@ -4679,8 +4741,8 @@ namespace BearWare
                                          int nSrcWidth,
                                          int nSrcHeight)
         {
-            return TTDLL.TT_PaintDesktopWindowEx(m_ttInst, nUserID, hDC, XDest,
-                                               YDest, nDestWidth, nDestHeight,
+            return TTDLL.TT_PaintDesktopWindowEx(m_ttInst, nUserID, hDC, XDest, 
+                                               YDest, nDestWidth, nDestHeight, 
                                                XSrc, YSrc, nSrcWidth, nSrcHeight);
         }
 
@@ -4822,6 +4884,7 @@ namespace BearWare
          * @param bEncrypted Whether the server requires an encrypted 
          * connection. Encryption is only available in the TeamTalk
          * Professional SDK.
+         * @return Returns TRUE if connection process was initiated.
          * @see OnConnectionSuccess
          * @see OnConnectionFailed
          * @see TeamTalk.DoLogin */
@@ -4832,8 +4895,43 @@ namespace BearWare
                             int nLocalUdpPort,
                             bool bEncrypted)
         {
-            return TTDLL.TT_Connect(m_ttInst, szHostAddress, nTcpPort, nUdpPort,
+            return TTDLL.TT_Connect(m_ttInst, szHostAddress, nTcpPort, nUdpPort, 
                                     nLocalTcpPort, nLocalUdpPort, bEncrypted);
+        }
+
+        /**
+         * @brief Same as Connect() but the option of providing a
+         * unique system-ID.
+         *
+         * The system-ID is set in the TeamTalk server API using
+         * TTS_StartServerSysID(). If a client tries to connect with a
+         * different system-ID that client will receive the error
+         * #CMDERR_INCOMPATIBLE_PROTOCOLS when trying to log in.
+         *
+         * @param szHostAddress The IP-address or hostname of the server.
+         * @param nTcpPort The host port of the server (TCP).
+         * @param nUdpPort The audio/video port of the server (UDP).
+         * @param nLocalTcpPort The local TCP port which should be used. 
+         * Setting it to 0 makes OS select a port number (recommended).
+         * @param nLocalUdpPort The local UDP port which should be used. 
+         * Setting it to 0 makes OS select a port number (recommended).
+         * @param bEncrypted Whether the server requires an encrypted 
+         * connection. Encryption is only available in the TeamTalk
+         * Professional SDK.
+         * @param szSystemID The identification of the conferencing system.
+         * The default value is "teamtalk". See TT_StartServerSysID()
+         * @return Returns TRUE if connection process was initiated. */
+        public bool ConnectSysID(string szHostAddress,
+                                 int nTcpPort,
+                                 int nUdpPort,
+                                 int nLocalTcpPort,
+                                 int nLocalUdpPort,
+                                 bool bEncrypted,
+                                 string szSystemID)
+        {
+            return TTDLL.TT_ConnectSysID(m_ttInst, szHostAddress, 
+                                         nTcpPort, nUdpPort, nLocalTcpPort, 
+                                         nLocalUdpPort, bEncrypted, szSystemID);
         }
 
         /**
@@ -4925,6 +5023,22 @@ namespace BearWare
             return TTDLL.TT_DoPing(m_ttInst);
         }
 
+        /** @brief Same as DologinEx() but without the option to
+         * specify @c szClientName. Kept for backwards compatibility.
+         *
+         * @param szNickname The nickname to use.
+         * @param szUsername The username of the #BearWare.UserAccount set up on the 
+         * server.
+         * @param szPassword The password of the user account on the server. Leave 
+         * blank if no account is needed on the server.
+         * @return Returns command ID which will be passed in 
+         * #CLIENTEVENT_CMD_PROCESSING event when the server is processing the 
+         * command. -1 is returned in case of error. */
+        public int DoLogin(string szNickname, string szUsername, string szPassword)
+        {
+            return TTDLL.TT_DoLogin(m_ttInst, szNickname, szUsername, szPassword);
+        }
+
         /**
          * @brief Logon to a server.
          * 
@@ -4946,15 +5060,18 @@ namespace BearWare
          * server.
          * @param szPassword The password of the user account on the server. Leave 
          * blank if no account is needed on the server.
+         * @param szClientName The name of the client application used. This is an 
+         * optional value and can be kept blank.
          * @return Returns command ID which will be passed in 
          * #OnCmdProcessing event when the server is processing the 
          * command. -1 is returned in case of error.
          * @see TeamTalk.DoJoinChannel
          * @see OnCmdMyselfLoggedIn
          * @see OnCmdError */
-        public int DoLogin(string szNickname, string szUsername, string szPassword)
+        public int DoLoginEx(string szNickname, string szUsername, string szPassword,
+                             string szClientName)
         {
-            return TTDLL.TT_DoLogin(m_ttInst, szNickname, szUsername, szPassword);
+            return TTDLL.TT_DoLoginEx(m_ttInst, szNickname, szUsername, szPassword, szClientName);
         }
         /**
          * @brief Logout of the server.
@@ -5712,16 +5829,16 @@ namespace BearWare
         {
             return TTDLL.TT_GetServerProperties(m_ttInst, ref lpServerProperties);
         }
-        /**
-          * @brief Get all the users on the server.
-          *
-          * If only users in a specific channel is needed call
-          * TeamTalk.GetChannelUsers()
-          *
-          * @param lpUsers An output array of #BearWare.User which will receive the
-          * users on the server.
-          * @see GetChannelUsers
-          * @see GetUser */
+       /**
+         * @brief Get all the users on the server.
+         *
+         * If only users in a specific channel is needed call
+         * TeamTalk.GetChannelUsers()
+         *
+         * @param lpUsers An output array of #BearWare.User which will receive the
+         * users on the server.
+         * @see GetChannelUsers
+         * @see GetUser */
         public bool GetServerUsers(out User[] lpUsers)
         {
             int count = 0;
@@ -5782,7 +5899,7 @@ namespace BearWare
         {
             IntPtr ptr = Marshal.AllocHGlobal(TeamTalk.TT_STRLEN * 2);
             bool b = TTDLL.TT_GetChannelPath(m_ttInst, nChannelID, ptr);
-            if (b)
+            if(b)
                 szChannelPath = Marshal.PtrToStringUni(ptr);
             Marshal.FreeHGlobal(ptr);
             return b;
@@ -6033,7 +6150,7 @@ namespace BearWare
          * TeamTalk.SetUserStoppedTalkingDelay().
          *
          * @see GetUserStoppedTalkingDelay */
-        public bool SetUserStoppedPlaybackDelay(int nUserID,
+        public bool SetUserStoppedPlaybackDelay(int nUserID, 
                                                 StreamType nStreamType,
                                                 int nDelayMSec)
         {
@@ -6053,7 +6170,7 @@ namespace BearWare
          * @param x Distance in meters to user (left/right).
          * @param y Distance in meters to user (back/forward).
          * @param z Distance in meters to user (up/down). */
-        public bool SetUserPosition(int nUserID, StreamType nStreamType,
+        public bool SetUserPosition(int nUserID, StreamType nStreamType, 
                                     float x, float y, float z)
         {
             return TTDLL.TT_SetUserPosition(m_ttInst, nUserID, nStreamType, x, y, z);
@@ -6166,7 +6283,7 @@ namespace BearWare
                 return new AudioBlock();
             AudioBlock lpAudioBlock = (AudioBlock)Marshal.PtrToStructure(ptr, typeof(AudioBlock));
             audioblocks.Add(lpAudioBlock.lpRawAudio, ptr);
-            return lpAudioBlock;
+            return lpAudioBlock; 
         }
 
         Dictionary<IntPtr, IntPtr> audioblocks = new Dictionary<IntPtr, IntPtr>();
@@ -6334,7 +6451,7 @@ namespace BearWare
         {
             IntPtr ptr = Marshal.AllocHGlobal(TeamTalk.TT_STRLEN * 2);
             bool b = TTDLL.TT_HotKey_GetKeyString(m_ttInst, nVKCode, ptr);
-            if (b)
+            if(b)
                 szKeyName = Marshal.PtrToStringUni(ptr);
             Marshal.FreeHGlobal(ptr);
             return b;
@@ -6579,7 +6696,7 @@ namespace BearWare
 
         /** @brief Delegate for event #OnCmdServerStatistics. */
         public delegate void ServerStats(ServerStatistics serverstatistics);
-
+            
         /** 
          * @brief Server statistics available.
          *
@@ -6821,20 +6938,20 @@ namespace BearWare
     public enum TTKeyTranslate : uint
     {
         /** @brief Perform no translation. */
-        TTKEY_NO_TRANSLATE = 0,
+        TTKEY_NO_TRANSLATE                  = 0,
         /** @brief Translate from Windows scan-code to TTKEYCODE. The
          * Windows scan-code can be retrieved in Windows' @c
          * WM_KEYDOWN and @c WM_KEYUP event. */
-        TTKEY_WINKEYCODE_TO_TTKEYCODE = 1,
+        TTKEY_WINKEYCODE_TO_TTKEYCODE       = 1,
         /** @brief Translate from TTKEYCODE to Windows scan-code. */
-        TTKEY_TTKEYCODE_TO_WINKEYCODE = 2,
+        TTKEY_TTKEYCODE_TO_WINKEYCODE       = 2,
         /** @brief Translate from Mac OS X Carbon @c kVK_* key-code to
          * TTKEYCODE. The Mac OS X key-codes are defined in Carbon's
          * API. */
-        TTKEY_MACKEYCODE_TO_TTKEYCODE = 3,
+        TTKEY_MACKEYCODE_TO_TTKEYCODE       = 3,
         /** @brief Translate from TTKEYCODE to Mac OS X Carbon @c
          * kVK_* key-code. */
-        TTKEY_TTKEYCODE_TO_MACKEYCODE = 4
+        TTKEY_TTKEYCODE_TO_MACKEYCODE       = 4
     }
 
     /** @} */
@@ -6895,7 +7012,7 @@ namespace BearWare
         {
             IntPtr ptr = Marshal.AllocHGlobal(TeamTalk.TT_STRLEN * 2);
             bool b = TTDLL.TT_Mixer_GetMixerName(nMixerIndex, ptr);
-            if (b)
+            if(b)
                 szMixerName = Marshal.PtrToStringUni(ptr);
 
             Marshal.FreeHGlobal(ptr);
@@ -6913,7 +7030,7 @@ namespace BearWare
         {
             IntPtr ptr = Marshal.AllocHGlobal(TeamTalk.TT_STRLEN * 2);
             bool b = TTDLL.TT_Mixer_GetWaveInName(nWaveDeviceID, ptr);
-            if (b)
+            if(b)
                 szMixerName = Marshal.PtrToStringUni(ptr);
             Marshal.FreeHGlobal(ptr);
             return b;
@@ -6930,7 +7047,7 @@ namespace BearWare
         {
             IntPtr ptr = Marshal.AllocHGlobal(TeamTalk.TT_STRLEN * 2);
             bool b = TTDLL.TT_Mixer_GetWaveOutName(nWaveDeviceID, ptr);
-            if (b)
+            if(b)
                 szMixerName = Marshal.PtrToStringUni(ptr);
 
             Marshal.FreeHGlobal(ptr);
@@ -7102,7 +7219,7 @@ namespace BearWare
         {
             IntPtr ptr = Marshal.AllocHGlobal(TeamTalk.TT_STRLEN * 2);
             bool b = TTDLL.TT_Mixer_GetWaveInControlName(nWaveDeviceID, nControlIndex, ptr);
-            if (b)
+            if(b)
                 szDeviceName = Marshal.PtrToStringUni(ptr);
             Marshal.FreeHGlobal(ptr);
             return b;
